@@ -26,5 +26,6 @@ Struktur folder dari repositori:
    git clone https://github.com/Dhaboav/gemastik.git
   ```
 2. Melakukan instalasi library python dengan `pip install -r requirements.txt` pada terminal.
-3. Membuat file setup.json pada folder repositori.
-4. Jalankan file `app.py`.
+3. Membuat file `setup.json` pada folder repositori.
+4. Membuat file `basisData.csv` pada folder datasets.
+5. Jalankan file `app.py`.
