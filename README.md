@@ -1,0 +1,30 @@
+<br />
+<div align="center">
+<h3 align="center">gemastik</h3>
+
+  <p align="center">
+    Repositori untuk keperluan gemastik.
+  </p>
+</div>
+
+### Struktur File
+Struktur folder dari repositori:
+```
+. 
+├── datasets
+├── src
+├── .gitignore
+├── app.py
+├── README.md
+├── requirements.txt
+└── setup.json
+```
+
+### Cara Instalasi Repositori
+1. Klon repo dari github.
+  ```git
+   git clone https://github.com/Dhaboav/gemastik.git
+  ```
+2. Melakukan instalasi library python dengan `pip install -r requirements.txt` pada terminal.
+3. Membuat file setup.json pada folder repositori.
+4. Jalankan file `app.py`.
