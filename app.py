@@ -45,6 +45,8 @@ def text_image(text: str, value, image, position: tuple, code: str = 'B') -> Non
         color = (255, 255, 255)
     elif code == 'B':
         color = (255, 0, 0)
+    elif code =='G':
+        color = (0, 255, 0)
 
     cv2.putText(image, f'{text}: {value}', (position[0], position[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
 
@@ -63,6 +65,7 @@ def main() -> None:
     stopwatch = time.time()
     interval = 60 # Detik
     sensor_data = None
+    count = 0
 
     # Datasets
     data = pd.read_csv(storage.get_pandas_dataset())
@@ -100,9 +103,9 @@ def main() -> None:
             [mq2_value, mq7_value, mq131_value, mq136_value, 
             no2_value, temperature, humidity,  dust_density]
         ])
-        print(data_sensor_test)
         predict_result = knn.predict(data_sensor_test)[0]
 
+        # Pojok Kiri atas
         text_image('MQ2', mq2_value, frame, (10, 30))
         text_image('MQ7', mq7_value, frame, (10, 50))
         text_image('MQ131', mq131_value, frame, (10, 70))
@@ -112,17 +115,23 @@ def main() -> None:
         text_image('Humidity', humidity, frame, (10, 150))
         text_image('Dust', dust_density, frame, (10, 170))
 
+        # Pojok kanan atas
+        text_image('Gambar', count, frame, (430, 30), code='W')
+        text_image('ESC', 'Keluar Program', frame, (430, 50), code='W')
+        text_image('Enter', 'Ambil Data', frame, (430, 70), code='W')
+
         # Pojok kanan bawah
-        text_image('Lokasi', 'UNTAN', frame, (450, 400), code='W')
+        text_image('Lokasi', setup['lokasi'], frame, (450, 400), code='W')
         text_image('Class', classes, frame, (450, 420), code='W')
         text_image('Kualitas', predict_result, frame, (450, 440), code='W')
 
-        cv2.imshow('Frame', frame)
+        cv2.imshow('GUI versi Alpha', frame)
         key = cv2.waitKey(1) & 0xFF 
         countdown = time.time() - stopwatch
 
         if key == 13 or (countdown > interval):
-            storage.save_image_dataset(frame)
+            count += 1
+            storage.save_image_dataset(frame, setup['lokasi'])
             stopwatch = time.time()
 
         if key == 27:

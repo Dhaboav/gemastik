@@ -23,14 +23,15 @@ class Storage:
         current_directory = os.path.dirname(os.path.abspath(__file__))
         self.parent_directory = os.path.dirname(os.path.dirname(current_directory))
 
-    def save_image_dataset(self, image) -> None:
+    def save_image_dataset(self, image, lokasi: str) -> None:
         """Menyimpan gambar.
 
         Args:
             image (cv2): Gambar dari opencv.
+            lokasi (str): Nama lokasi.
         """
         dataset_path = os.path.join(self.parent_directory, self.datasets_path)
-        image_format_name = f'img{self.capture_count} {self.timestamp}.jpg'
+        image_format_name = f'{lokasi}{self.capture_count} {self.timestamp}.jpg'
         image_format_name = image_format_name.replace(':', '-')
         image_path = os.path.join(dataset_path, image_format_name)
         cv2.imwrite(image_path, image)
@@ -67,16 +68,19 @@ class Storage:
             images.extend(glob.glob(os.path.join(dataset_path, pattern)))
         return images
     
-    def get_pandas_dataset(self, filename: str ='basisData.csv'):
+    def get_pandas_dataset(self, filename: str ='basisData.csv') -> str:
         """Get path untuk dataframe pandas.
 
         Args:
             path (str): Nama folder pandas. Default basisData.csv
+
+        Returns:
+            str: Mengembalikan path dari folder.
         """
         dataset_path = os.path.join(self.parent_directory, self.datasets_path)
         file_pandas = os.path.join(dataset_path, filename)
         return file_pandas
-
+    
     def set_datasets_path(self, path: str) -> None:
         """Set path untuk dataframe pandas.
 
