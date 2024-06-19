@@ -55,7 +55,7 @@ def main() -> None:
         setup = json.load(json_file)
 
     storage = Storage()
-    storage.set_datasets_path(setup['path']['datasetsPath'])
+    storage.set_datasets_path(setup['path'])
     image_classifier = ImageClassifier()
     serial_connection = serial.Serial(setup['serial']['comPort'], 
                                       setup['serial']['baudrate'])
