@@ -115,17 +115,18 @@ def main() -> None:
         text_image('Humidity', humidity, frame, (10, 150))
         text_image('Dust', dust_density, frame, (10, 170))
 
-        # Pojok kanan atas
-        text_image('Gambar', count, frame, (430, 30), code='W')
-        text_image('ESC', 'Keluar Program', frame, (430, 50), code='W')
-        text_image('Enter', 'Ambil Data', frame, (430, 70), code='W')
-
         # Pojok kanan bawah
         text_image('Lokasi', setup['lokasi'], frame, (450, 400), code='W')
         text_image('Class', classes, frame, (450, 420), code='W')
         text_image('Kualitas', predict_result, frame, (450, 440), code='W')
 
-        cv2.imshow('GUI versi Alpha', frame)
+        # Pojok kanan atas
+        display_frame = frame.copy()
+        text_image('Gambar', count, display_frame, (430, 30), code='W')
+        text_image('ESC', 'Keluar Program', display_frame, (430, 50), code='W')
+        text_image('Enter', 'Ambil Data', display_frame, (430, 70), code='W')
+
+        cv2.imshow('GUI versi Alpha', display_frame)
         key = cv2.waitKey(1) & 0xFF 
         countdown = time.time() - stopwatch
 
