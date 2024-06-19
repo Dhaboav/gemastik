@@ -2,7 +2,10 @@ import cv2
 import time
 import json
 import serial
+import numpy as np
+import pandas as pd
 from src.python.Storage import Storage
+from sklearn.neighbors import KNeighborsClassifier
 from src.python.ImageClassifier import ImageClassifier
 
 
@@ -28,7 +31,7 @@ def read_serial_data(serial: serial) -> dict:
             print("Received empty line from serial port.")
     return None
 
-def text_image(text: str, value, image, position: tuple) -> None:
+def text_image(text: str, value, image, position: tuple, code: str = 'B') -> None:
     """Menempelkan text ke image.
     
     Args:
@@ -36,8 +39,14 @@ def text_image(text: str, value, image, position: tuple) -> None:
         value (any): Nilai yang ingin ditampilkan.
         image (cv2): Target gambar.
         position (tuple): Koordinat x dan y.
+        code (str, optional): Kode untuk warna text. Default 'B' (Biru). Gunakan 'W' (Putih).
     """
-    cv2.putText(image, f'{text}: {value}', (position[0], position[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
+    if code == 'W':
+        color = (255, 255, 255)
+    elif code == 'B':
+        color = (255, 0, 0)
+
+    cv2.putText(image, f'{text}: {value}', (position[0], position[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
 
 def main() -> None:
     """Bagian untuk dieksekusi."""
@@ -46,7 +55,7 @@ def main() -> None:
         setup = json.load(json_file)
 
     storage = Storage()
-    storage.set_datasets_path(setup['path'])
+    storage.set_datasets_path(setup['path']['datasetsPath'])
     image_classifier = ImageClassifier()
     serial_connection = serial.Serial(setup['serial']['comPort'], 
                                       setup['serial']['baudrate'])
@@ -54,6 +63,13 @@ def main() -> None:
     stopwatch = time.time()
     interval = 60 # Detik
     sensor_data = None
+
+    # Datasets
+    data = pd.read_csv(storage.get_pandas_dataset())
+    x = data[['mq2', 'mq7', 'mq131', 'mq136', 'no2', 'temperature', 'humidity', 'dust']].values
+    y = data['status'].values
+    knn = KNeighborsClassifier()
+    knn.fit(x, y)
     # Inisialisasi selesai =======================================
 
     # fungsi utama mulai =========================================
@@ -78,6 +94,14 @@ def main() -> None:
             temperature = sensor_data.get('Temperature', 'N/A')
             humidity = sensor_data.get('Humidity', 'N/A')
             dust_density = sensor_data.get('Dust', 'N/A')
+        
+        # Prediksi
+        data_sensor_test = np.array([
+            [mq2_value, mq7_value, mq131_value, mq136_value, 
+            no2_value, temperature, humidity,  dust_density]
+        ])
+        print(data_sensor_test)
+        predict_result = knn.predict(data_sensor_test)[0]
 
         text_image('MQ2', mq2_value, frame, (10, 30))
         text_image('MQ7', mq7_value, frame, (10, 50))
@@ -87,7 +111,11 @@ def main() -> None:
         text_image('Temperature', temperature, frame, (10, 130))
         text_image('Humidity', humidity, frame, (10, 150))
         text_image('Dust', dust_density, frame, (10, 170))
-        text_image('Class', classes, frame, (10, 190))
+
+        # Pojok kanan bawah
+        text_image('Lokasi', 'UNTAN', frame, (450, 400), code='W')
+        text_image('Class', classes, frame, (450, 420), code='W')
+        text_image('Kualitas', predict_result, frame, (450, 440), code='W')
 
         cv2.imshow('Frame', frame)
         key = cv2.waitKey(1) & 0xFF 
@@ -95,7 +123,6 @@ def main() -> None:
 
         if key == 13 or (countdown > interval):
             storage.save_image_dataset(frame)
-            storage.save_pandas_dataframe(sensor_data)
             stopwatch = time.time()
 
         if key == 27:

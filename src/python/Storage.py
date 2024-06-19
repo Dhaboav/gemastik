@@ -66,11 +66,21 @@ class Storage:
         for pattern in image_patterns:
             images.extend(glob.glob(os.path.join(dataset_path, pattern)))
         return images
+    
+    def get_pandas_dataset(self, filename: str ='basisData.csv'):
+        """Get path untuk dataframe pandas.
+
+        Args:
+            path (str): Nama folder pandas. Default basisData.csv
+        """
+        dataset_path = os.path.join(self.parent_directory, self.datasets_path)
+        file_pandas = os.path.join(dataset_path, filename)
+        return file_pandas
 
     def set_datasets_path(self, path: str) -> None:
         """Set path untuk dataframe pandas.
 
         Args:
-            path (str): nama folder pandas.
+            path (str): Nama folder pandas.
         """
         self.datasets_path = path
