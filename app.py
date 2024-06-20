@@ -5,6 +5,7 @@ import serial
 import numpy as np
 import pandas as pd
 from src.python.Storage import Storage
+from src.python.RequestPost import RequestPost
 from sklearn.neighbors import KNeighborsClassifier
 from src.python.ImageClassifier import ImageClassifier
 
@@ -58,6 +59,7 @@ def main() -> None:
 
     storage = Storage()
     storage.set_datasets_path(setup['path'])
+    send_post = RequestPost(setup['urlAPI'])
     image_classifier = ImageClassifier()
     serial_connection = serial.Serial(setup['serial']['comPort'], 
                                       setup['serial']['baudrate'])
@@ -107,14 +109,14 @@ def main() -> None:
 
         # Pojok Kiri atas
         frame = raw_frame.copy()
-        text_image('MQ2', mq2_value, frame, (10, 30))
-        text_image('MQ7', mq7_value, frame, (10, 50))
-        text_image('MQ131', mq131_value, frame, (10, 70))
-        text_image('MQ136', mq136_value, frame, (10, 90))
+        text_image('CO2', mq2_value, frame, (10, 30))
+        text_image('CO', mq7_value, frame, (10, 50))
+        text_image('O3', mq131_value, frame, (10, 70))
+        text_image('SO2', mq136_value, frame, (10, 90))
         text_image('NO2', no2_value, frame, (10, 110))
         text_image('Temperature', temperature, frame, (10, 130))
         text_image('Humidity', humidity, frame, (10, 150))
-        text_image('Dust', dust_density, frame, (10, 170))
+        text_image('PM10', dust_density, frame, (10, 170))
 
         # Pojok kanan bawah
         text_image('Lokasi', setup['lokasi'], frame, (450, 400), code='W')
@@ -132,8 +134,27 @@ def main() -> None:
         countdown = time.time() - stopwatch
 
         if key == 13 or (countdown > interval):
-            storage.save_image_dataset(raw_frame, setup['lokasi'], count, 'raw')
-            storage.save_image_dataset(frame, setup['lokasi'], count, 'img')
+            status_raw = storage.save_image_dataset(raw_frame, setup['lokasi'], count, 'raw')
+            status_send = storage.save_image_dataset(frame, setup['lokasi'], count, 'send')
+
+            if status_send:
+                data_sensor_send = {
+                    'pm10':int(dust_density),
+                    'no2':no2_value,
+                    'so2':mq136_value,
+                    'co2':mq2_value,
+                    'co':mq7_value,
+                    'o3':mq131_value,
+                    's_gambar':classes,
+                    's_sensor':predict_result,
+                    'temp':temperature,
+                    'huma':humidity,
+                    'id_pin':1
+                }
+                send_post.post(data=data_sensor_send, image_path=status_send)
+            else:
+                print('No path image')
+
             stopwatch = time.time()
             count += 1
 

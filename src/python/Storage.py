@@ -21,7 +21,7 @@ class Storage:
         current_directory = os.path.dirname(os.path.abspath(__file__))
         self.parent_directory = os.path.dirname(os.path.dirname(current_directory))
 
-    def save_image_dataset(self, image, lokasi: str, count: int, folder: str) -> None:
+    def save_image_dataset(self, image, lokasi: str, count: int, folder: str) -> str:
         """Menyimpan gambar.
 
         Args:
@@ -29,12 +29,17 @@ class Storage:
             lokasi (str): Nama lokasi.
             count (int): Counter buat file.
             folder (str): Nama folder buat simpan gambar.
+
+        Returns:
+            str: Mengembalikan path dari gambar
         """
         dataset_path = os.path.join(self.parent_directory, self.datasets_path, folder)
         image_format_name = f'{lokasi}{count} {self.timestamp}.jpg'
         image_format_name = image_format_name.replace(':', '-')
         image_path = os.path.join(dataset_path, image_format_name)
         cv2.imwrite(image_path, image)
+
+        return image_path
         
     def save_pandas_dataframe(self, data: dict, filename='basisData.csv') -> None:
         """Menyimpan data sensor ke csv format.

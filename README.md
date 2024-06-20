@@ -12,6 +12,8 @@ Struktur folder dari repositori:
 ```
 . 
 ├── datasets
+    ├── raw
+    └── send
 ├── src
 ├── .gitignore
 ├── app.py
