@@ -77,8 +77,8 @@ def main() -> None:
 
     # fungsi utama mulai =========================================
     while camera.isOpened():
-        ret, frame = camera.read()
-        frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        ret, raw_frame = camera.read()
+        frame_gray = cv2.cvtColor(raw_frame, cv2.COLOR_BGR2GRAY)
         classes = image_classifier.image_classification(frame_gray)
         if not ret:
             print("Error: Failed to capture frame from camera.")
@@ -106,6 +106,7 @@ def main() -> None:
         predict_result = knn.predict(data_sensor_test)[0]
 
         # Pojok Kiri atas
+        frame = raw_frame.copy()
         text_image('MQ2', mq2_value, frame, (10, 30))
         text_image('MQ7', mq7_value, frame, (10, 50))
         text_image('MQ131', mq131_value, frame, (10, 70))
@@ -131,9 +132,10 @@ def main() -> None:
         countdown = time.time() - stopwatch
 
         if key == 13 or (countdown > interval):
-            count += 1
-            storage.save_image_dataset(frame, setup['lokasi'])
+            storage.save_image_dataset(raw_frame, setup['lokasi'], count, 'raw')
+            storage.save_image_dataset(frame, setup['lokasi'], count, 'img')
             stopwatch = time.time()
+            count += 1
 
         if key == 27:
             break

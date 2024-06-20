@@ -10,32 +10,31 @@ class Storage:
     
     Attributes:
         datasets_path (str): Path referensi ke datasets.
-        capture_count (int): Penghitung buat gambar.
         timestamp (str): Format tanggal.
         parent_directory (str): Path relative file terhadap root.
     """
     def __init__(self) -> None:
         self.datasets_path = None
-        self.capture_count = 0
         self.timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
 
         # Relative path dari folder root
         current_directory = os.path.dirname(os.path.abspath(__file__))
         self.parent_directory = os.path.dirname(os.path.dirname(current_directory))
 
-    def save_image_dataset(self, image, lokasi: str) -> None:
+    def save_image_dataset(self, image, lokasi: str, count: int, folder: str) -> None:
         """Menyimpan gambar.
 
         Args:
             image (cv2): Gambar dari opencv.
             lokasi (str): Nama lokasi.
+            count (int): Counter buat file.
+            folder (str): Nama folder buat simpan gambar.
         """
-        dataset_path = os.path.join(self.parent_directory, self.datasets_path)
-        image_format_name = f'{lokasi}{self.capture_count} {self.timestamp}.jpg'
+        dataset_path = os.path.join(self.parent_directory, self.datasets_path, folder)
+        image_format_name = f'{lokasi}{count} {self.timestamp}.jpg'
         image_format_name = image_format_name.replace(':', '-')
         image_path = os.path.join(dataset_path, image_format_name)
         cv2.imwrite(image_path, image)
-        self.capture_count += 1
         
     def save_pandas_dataframe(self, data: dict, filename='basisData.csv') -> None:
         """Menyimpan data sensor ke csv format.
