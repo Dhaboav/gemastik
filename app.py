@@ -4,6 +4,7 @@ import json
 import serial
 import numpy as np
 import pandas as pd
+from picamera2 import Picamera2
 from src.python.Storage import Storage
 from src.python.RequestPost import RequestPost
 from sklearn.neighbors import KNeighborsClassifier
@@ -63,7 +64,11 @@ def main() -> None:
     image_classifier = ImageClassifier()
     serial_connection = serial.Serial(setup['serial']['comPort'], 
                                       setup['serial']['baudrate'])
-    camera = cv2.VideoCapture(0)
+    
+    camera = Picamera2()
+    camera.preview_configuration.main.size=(640,480)
+    camera.preview_configuration.main.format='RGB888'
+    camera.start()
     stopwatch = time.time()
     interval = 60 # Detik
     sensor_data = None
@@ -79,12 +84,9 @@ def main() -> None:
 
     # fungsi utama mulai =========================================
     while camera.isOpened():
-        ret, raw_frame = camera.read()
+        raw_frame = camera.capture_array()
         frame_gray = cv2.cvtColor(raw_frame, cv2.COLOR_BGR2GRAY)
         classes = image_classifier.image_classification(frame_gray)
-        if not ret:
-            print("Error: Failed to capture frame from camera.")
-            break
 
         new_sensor_data = read_serial_data(serial_connection)
         if new_sensor_data:
@@ -161,7 +163,7 @@ def main() -> None:
         if key == 27:
             break
 
-    camera.release()
+    camera.stop()
     cv2.destroyAllWindows()
     serial_connection.close()
     # fungsi utama selesai =======================================
