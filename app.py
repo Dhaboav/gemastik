@@ -83,7 +83,7 @@ def main() -> None:
     # Inisialisasi selesai =======================================
 
     # fungsi utama mulai =========================================
-    while camera.isOpened():
+    while True:
         raw_frame = camera.capture_array()
         frame_gray = cv2.cvtColor(raw_frame, cv2.COLOR_BGR2GRAY)
         classes = image_classifier.image_classification(frame_gray)
