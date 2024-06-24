@@ -39,7 +39,7 @@ class Storage:
         image_path = os.path.join(dataset_path, image_format_name)
         cv2.imwrite(image_path, image)
 
-        return image_path
+        # return image_path
         
     def save_pandas_dataframe(self, data: dict, filename='basisData.csv') -> None:
         """Menyimpan data sensor ke csv format.

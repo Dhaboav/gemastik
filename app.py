@@ -2,13 +2,13 @@ import cv2
 import time
 import json
 import serial
-import numpy as np
-import pandas as pd
+# import numpy as np
+# import pandas as pd
 from picamera2 import Picamera2
 from src.python.Storage import Storage
-from src.python.RequestPost import RequestPost
-from sklearn.neighbors import KNeighborsClassifier
-from src.python.ImageClassifier import ImageClassifier
+# from src.python.RequestPost import RequestPost
+# from sklearn.neighbors import KNeighborsClassifier
+# from src.python.ImageClassifier import ImageClassifier
 
 
 def read_serial_data(serial: serial) -> dict:
@@ -60,8 +60,8 @@ def main() -> None:
 
     storage = Storage()
     storage.set_datasets_path(setup['path'])
-    send_post = RequestPost(setup['urlAPI'])
-    image_classifier = ImageClassifier()
+    # send_post = RequestPost(setup['urlAPI'])
+    # image_classifier = ImageClassifier()
     serial_connection = serial.Serial(setup['serial']['comPort'], 
                                       setup['serial']['baudrate'])
     
@@ -70,23 +70,23 @@ def main() -> None:
     camera.preview_configuration.main.format='RGB888'
     camera.start()
     stopwatch = time.time()
-    interval = 60 # Detik
+    interval = setup['interval'] # Detik
     sensor_data = None
     count = 0
 
     # Datasets
-    data = pd.read_csv(storage.get_pandas_dataset())
-    x = data[['mq2', 'mq7', 'mq131', 'mq136', 'no2', 'temperature', 'humidity', 'dust']].values
-    y = data['status'].values
-    knn = KNeighborsClassifier()
-    knn.fit(x, y)
+    # data = pd.read_csv(storage.get_pandas_dataset())
+    # x = data[['mq2', 'mq7', 'mq131', 'mq136', 'no2', 'temperature', 'humidity', 'dust']].values
+    # y = data['status'].values
+    # knn = KNeighborsClassifier()
+    # knn.fit(x, y)
     # Inisialisasi selesai =======================================
 
     # fungsi utama mulai =========================================
     while True:
         raw_frame = camera.capture_array()
         frame_gray = cv2.cvtColor(raw_frame, cv2.COLOR_BGR2GRAY)
-        classes = image_classifier.image_classification(frame_gray)
+        # classes = image_classifier.image_classification(frame_gray)
 
         new_sensor_data = read_serial_data(serial_connection)
         if new_sensor_data:
@@ -103,11 +103,11 @@ def main() -> None:
             dust_density = sensor_data.get('Dust', 'N/A')
         
         # Prediksi
-        data_sensor_test = np.array([
-            [mq2_value, mq7_value, mq131_value, mq136_value, 
-            no2_value, temperature, humidity,  dust_density]
-        ])
-        predict_result = knn.predict(data_sensor_test)[0]
+        # data_sensor_test = np.array([
+        #     [mq2_value, mq7_value, mq131_value, mq136_value, 
+        #     no2_value, temperature, humidity,  dust_density]
+        # ])
+        # predict_result = knn.predict(data_sensor_test)[0]
 
         # Pojok Kiri atas
         frame = raw_frame.copy()
@@ -122,8 +122,8 @@ def main() -> None:
 
         # Pojok kanan bawah
         text_image('Lokasi', setup['lokasi'], frame, (450, 400), code='W')
-        text_image('Class', classes, frame, (450, 420), code='W')
-        text_image('Kualitas', predict_result, frame, (450, 440), code='W')
+        # text_image('Class', classes, frame, (450, 420), code='W')
+        # text_image('Kualitas', predict_result, frame, (450, 440), code='W')
 
         # Pojok kanan atas
         display_frame = frame.copy()
@@ -136,29 +136,30 @@ def main() -> None:
         countdown = time.time() - stopwatch
 
         if key == 13 or (countdown > interval):
-            status_raw = storage.save_image_dataset(raw_frame, setup['lokasi'], count, 'raw')
-            status_send = storage.save_image_dataset(frame, setup['lokasi'], count, 'send')
-
-            if status_send:
-                data_sensor_send = {
-                    'pm10':int(dust_density),
-                    'no2':no2_value,
-                    'so2':mq136_value,
-                    'co2':mq2_value,
-                    'co':mq7_value,
-                    'o3':mq131_value,
-                    's_gambar':classes,
-                    's_sensor':predict_result,
-                    'temp':temperature,
-                    'huma':humidity,
-                    'id_pin':1
-                }
-                send_post.post(data=data_sensor_send, image_path=status_send)
-            else:
-                print('No path image')
-
+            storage.save_image_dataset(raw_frame, setup['lokasi'], count, 'raw')
+            storage.save_image_dataset(frame, setup['lokasi'], count, 'send')
+            storage.save_pandas_dataframe(data=sensor_data)
             stopwatch = time.time()
             count += 1
+
+            # if status_send:
+            # data_sensor_send = {
+            #     'pm10':int(dust_density),
+            #     'no2':no2_value,
+            #     'so2':mq136_value,
+            #     'co2':mq2_value,
+            #     'co':mq7_value,
+            #     'o3':mq131_value,
+            #     's_gambar':classes,
+            #     's_sensor':predict_result,
+            #     'temp':temperature,
+            #     'huma':humidity,
+            #     'id_pin':1
+            # }
+
+                # send_post.post(data=data_sensor_send, image_path=status_send)
+            # else:
+            #     print('No path image')
 
         if key == 27:
             break
